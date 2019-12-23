@@ -31,7 +31,7 @@ logger = common.get_sales_logger()
 class EbMail(object):
 
     def __init__(self, sender=None, recipient_list=None, cc_list=None, attachment_list=None, is_encrypt=True,
-                 mail_title=None, mail_body=None, pass_body=None, addressee=None):
+                 mail_title=None, mail_body=None, pass_body=None, addressee=None, zip_file_name=None):
         self.addressee = addressee
         self.sender = sender
         self.recipient_list = EbMail.str_to_list(recipient_list)
@@ -43,6 +43,7 @@ class EbMail(object):
         self.password = None
         self.pass_body = pass_body
         self.temp_files = []
+        self.zip_file_name = zip_file_name
 
     def check_recipient(self):
         if not self.recipient_list:
@@ -104,7 +105,10 @@ class EbMail(object):
                 self.temp_files.append(temp_zip)
                 file_list = []
                 for attachment_file in self.attachment_list:
-                    new_path = os.path.join(temp_path, os.path.basename(attachment_file))
+                    if '注文書' in attachment_file:
+                        new_path = os.path.join(temp_path, os.path.basename('注文書.pdf'))
+                    if '注文請書' in attachment_file:
+                        new_path = os.path.join(temp_path, os.path.basename('注文請書.pdf'))
                     file_list.append(new_path)
                     self.temp_files.append(new_path)
                     shutil.copy(attachment_file, new_path)
@@ -170,7 +174,7 @@ class EbMail(object):
             )
             attachments = self.zip_attachments()
             if attachments:
-                email.attach('%s.zip' % self.mail_title, attachments, constants.MIME_TYPE_ZIP)
+                email.attach('%s.zip' % self.zip_file_name, attachments, constants.MIME_TYPE_ZIP)
             email.send()
             # パスワードを送信する。
             self.send_password(mail_connection)

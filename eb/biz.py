@@ -849,6 +849,8 @@ def generate_bp_order_data(project_member, year, month, contract, user, bp_order
     data['DETAIL']['POST_CODE'] = common.get_full_postcode(company.post_code)
     # 本社電話番号
     data['DETAIL']['TEL'] = company.tel or ''
+    # 本社FAX番号
+    data['DETAIL']['FAX'] = company.fax or ''
     # 代表取締役
     data['DETAIL']['MASTER'] = company.president if company.president else ""
     # 本社住所
@@ -932,6 +934,8 @@ def generate_bp_order_data(project_member, year, month, contract, user, bp_order
     data['DETAIL']['DELIVERY_PROPERTIES'] = models.Config.get_bp_order_delivery_properties()
     # 支払条件
     data['DETAIL']['PAYMENT_CONDITION'] = models.Config.get_bp_order_payment_condition()
+    # 支払日付
+    data['DETAIL']['PAYMENT_DAY'] = contract.company.payment_day
     # 契約条項
     data['DETAIL']['CONTRACT_ITEMS'] = models.Config.get_bp_order_contract_items()
 
@@ -1196,8 +1200,10 @@ def generate_subcontractor_request_data(subcontractor, year, month, subcontracto
     # 部署名称
     data['DETAIL']['ORG_NAME'] = unicode(subcontractor_request.section)
     # お支払い期限
-    data['DETAIL']['REMIT_DATE'] = company.get_pay_date(date=first_day).strftime('%Y/%m/%d')
-    data['EXTRA']['REMIT_DATE'] = company.get_pay_date(date=first_day)
+    # data['DETAIL']['REMIT_DATE'] = company.get_pay_date(date=first_day).strftime('%Y/%m/%d')
+    # data['EXTRA']['REMIT_DATE'] = company.get_pay_date(date=first_day)
+    data['DETAIL']['REMIT_DATE'] = subcontractor.get_pay_date(date=first_day).strftime('%Y/%m/%d')
+    data['EXTRA']['REMIT_DATE'] = subcontractor.get_pay_date(date=first_day)
     # 請求番号
     data['DETAIL']['REQUEST_NO'] = subcontractor_request.request_no
     # お支払通知書番号

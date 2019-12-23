@@ -4,10 +4,22 @@
 {% load year_month_filter %}
 
 {% block header %}
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
-<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/redmond/jquery-ui.css" >
 <script type="text/javascript">
+    function from_submit(fromId) {
+        ajax_post(
+            $("#"+fromId).attr('action'),
+            $("#"+fromId).serialize(),
+            function mail_callback_fn(data) {
+                if (data.result === false) {
+                    alert(data.message);
+                } else {
+                    alert("メール送信しました。");
+                    hide_dialog();
+                }
+            }
+        );
+        return false;
+    }
 </script>
 {% endblock %}
 
@@ -111,9 +123,8 @@
             <tr>
                 <th>案件／対象年月</th>
                 <th style="width: 60px;">営業日数</th>
-                <th>開始日／注文番号</th>
-                <th>終了日／注文書</th>
-                <th>注文請書</th>
+                <th>開始日／注文書</th>
+                <th>終了日／注文請書</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -130,43 +141,49 @@
                     <td>{{ project_member.end_date }}</td>
                     <td></td>
                     <td></td>
-                    <td></td>
                 </tr>
                 {% for year, month, days, order, is_old in project_member.get_bp_member_orders %}
                     <tr class="row2">
                         <td>{{ year }}年{{ month|stringformat:"02d" }}月</td>
                         <td class="num">{{ days }}</td>
-                        <td class="center">
-                            {% if order %}
-                                <a href="{% url 'bp_member_order' order.pk %}">{{ order.order_no }}</a>
-                            {% else %}
-                                <a href="{% url 'bp_member_order_preview' project_member.pk year month|stringformat:'02d' %}" target="_blank">プレビュー</a>
-                            {% endif %}
-                        </td>
                         {% if order %}
                             <td class="center">
-                                <a href="{% url 'download_bp_order' project_member.pk year month|stringformat:'02d' %}?overwrite=1" target="_blank">
-                                    ダウンロード</a>
                                 {% if order.month != month|stringformat:"02d" %}
                                     <!--複数月の注文書は開始年月だけで作成できる。-->
                                 {% else %}
-                                &nbsp;|&nbsp;
                                 <a href="{% url 'download_bp_order' project_member.pk year month|stringformat:'02d' %}?end_year={{ order.end_year }}&end_month={{ order.end_month }}" target="_blank"
                                    onclick="return confirm('既に作成済みなので、上書きしてもよろしいですか？')">
                                     再作成</a>
+                                |&nbsp;
+                                <a href="{% url 'download_bp_order' project_member.pk year month|stringformat:'02d' %}?overwrite=xlsx&is_request=False"
+                                   target="_blank">
+                                        Excel</a>
+                                |&nbsp;
+                                <a href="{% url 'download_bp_order' project_member.pk year month|stringformat:'02d' %}?overwrite=pdf&is_request=False"
+                                   target="_blank">
+                                        PDF</a>
+                                |&nbsp;
+                                <a href="{% url 'bp_member_order' order.pk %}?is_request=False" target="_blank">{{ order.order_no }}</a>
                                 {% endif %}
                             </td>
                             <td class="center">
                                 {% if order.filename_request %}
-                                    <a href="{% url 'download_bp_order_request' project_member.pk year month|stringformat:'02d' %}?overwrite=1" target="_blank">
-                                        ダウンロード</a>
                                     {% if order.month != month|stringformat:"02d" %}
                                         <!--複数月の注文書は開始年月だけで作成できる。-->
                                     {% else %}
-                                        &nbsp;|&nbsp;
                                         <a href="{% url 'download_bp_order_request' project_member.pk year month|stringformat:'02d' %}?end_year={{ order.end_year }}&end_month={{ order.end_month }}" target="_blank"
                                            onclick="return confirm('既に作成済みなので、上書きしてもよろしいですか？')">
                                             再作成</a>
+                                        |&nbsp;
+                                        <a href="{% url 'download_bp_order_request' project_member.pk year month|stringformat:'02d' %}?overwrite=xlsx&is_request=True"
+                                           target="_blank">
+                                                Excel</a>
+                                        |&nbsp;
+                                        <a href="{% url 'download_bp_order_request' project_member.pk year month|stringformat:'02d' %}?overwrite=pdf&is_request=True"
+                                           target="_blank">
+                                                PDF</a>
+                                |&nbsp;
+                                <a href="{% url 'bp_member_order' order.pk %}?is_request=True" target="_blank">{{ order.order_no }}</a>
                                     {% endif %}
                                 {% else %}
                                     <a href="{% url 'download_bp_order_request' project_member.pk year month|stringformat:'02d' %}?end_year={{ order.end_year }}&end_month={{ order.end_month }}" target="_blank">注文請書作成</a>
@@ -177,7 +194,64 @@
                                     <img width="12px" src="/static/{{ theme }}/img/icon-normal.png"/>
                                 {% endif %}
                             </td>
-                            <td class="center"><a type="button" href="/sendpdf?id={{ order.subcontractor.pk }}&token={{ md5_token }}&ref={{ request.get_full_path|urlencode }}&order_id={{ order.pk }}&year={{ year }}&month={{ month }}&path1={{ order.get_order_path|urlencode }}&path2={{ order.get_order_request_path|urlencode }}&operator={{ request.user.email|urlencode }}">送信</a></td>
+                            <td class="center">
+                                <a href="#" onclick="javascript:show_dialog('preview_mail_send_{{ project_member.pk }}_{{ year }}_{{ month|stringformat:'02d' }}')" >送信</a>
+                                <div class="dialog" id="preview_mail_send_{{ project_member.pk }}_{{ year }}_{{ month|stringformat:'02d' }}" style="width: 680px;">
+                                    <form id="send_mail_form_{{ project_member.pk }}_{{ year }}_{{ month|stringformat:'02d' }}" action="{% url 'send_mail_bp_member' project_member.pk year month|stringformat:'02d' %}" method="post">
+                                        {% csrf_token %}
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">差出人：</label>
+                                            <input name="sender" style="float: left;width: 600px;" readonly="readonly" value="{{ mail_sender }}"/>
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">宛先：</label>
+                                            <input name="recipient_list" style="float: left;width: 600px;" value="{% for email in order.subcontractor.get_member_order_mail_list.0 %}{{email}},{% endfor %}"/>
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">ＣＣ：</label>
+                                            <input name="cc_list" style="float: left;width: 600px;" value="{% for email in order.subcontractor.get_member_order_mail_list.1 %}{{email}},{% endfor %}"/>
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">件名：</label>
+                                            {% for index, title in mailtitles %}
+                                                {% if index == month %}
+                                                    <input name="mail_title" style="float: left;width: 600px;" value="{{ title }}"/>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">添付：</label>
+                                            <div style="padding: 5px 0px;">
+                                                {{ order.filename_pdf }}<br>
+                                                {{ order.filename_request_pdf }}
+                                            </div>
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div style="padding: 5px 0px;">
+                                            <label style="float: left;text-align:right;width: 50px;">内容：</label>
+                                            {% for index, body in mailbodys %}
+                                                {% if index == month %}
+                                                    <textarea name="mail_body" style="float: left;width: 600px; height: 300px;">{{ body }}</textarea>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if pass_body %}
+                                                <input type="hidden" name="pass_body" value="{{ pass_body }}"/>
+                                            {% endif %}
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                        <div>
+                                            <div style="padding: 2px 10px; clear: both;">
+                                                <input type="button" onclick="from_submit('send_mail_form_{{ project_member.pk }}_{{ year }}_{{ month|stringformat:'02d' }}')" value="送信" style="margin:0 auto;"/>
+                                            </div>
+                                            <div style="clear: both;"></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </td>
                         {% else %}
                             <td class="center">
                                 {% if is_old %}
@@ -235,11 +309,11 @@
         </tbody>
         <tfoot>
             <tr>
-                <th>案件／対象年月</th>
-                <th>営業日数</th>
-                <th>開始日／注文番号</th>
-                <th>終了日／操作</th>
-                <th>注文請書</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
                 <th></th>
                 <th></th>
             </tr>

@@ -789,10 +789,19 @@ def get_order_file_path(order_no, client_name, project_name, member_name, ym, is
 
     now = datetime.datetime.now()
     if is_request:
-        name_format = "WT注文請書_%s_%s%s%s_%s.xlsx"
+        name_xls_format = "WT注文請書_%s_%s%s%s_%s.xlsx"
+        name_pdf_format = "WT注文請書_%s_%s%s%s_%s.pdf"
     else:
-        name_format = "WT注文書_%s_%s%s%s_%s.xlsx"
-    filename = name_format % (
+        name_xls_format = "WT注文書_%s_%s%s%s_%s.xlsx"
+        name_pdf_format = "WT注文書_%s_%s%s%s_%s.pdf"
+    filename_xls = name_xls_format % (
+        str(order_no),
+        (project_name.replace('/', u"／").encode('UTF-8') + "_") if project_name else '',
+        (member_name.encode('UTF-8') + "_") if member_name else '',
+        client_name.encode('UTF-8'),
+        now.strftime("%H%M%S%f")
+    )
+    filename_pdf = name_pdf_format % (
         str(order_no),
         (project_name.replace('/', u"／").encode('UTF-8') + "_") if project_name else '',
         (member_name.encode('UTF-8') + "_") if member_name else '',
@@ -802,7 +811,7 @@ def get_order_file_path(order_no, client_name, project_name, member_name, ym, is
     path = os.path.join(settings.GENERATED_FILES_ROOT, "partner_order", str(ym))
     if not os.path.exists(path):
         os.makedirs(path)
-    return os.path.join(path, filename).decode('UTF-8')
+    return os.path.join(path, filename_xls).decode('UTF-8'), os.path.join(path, filename_pdf).decode('UTF-8')
 
 
 def get_template_pay_notify_path(company):

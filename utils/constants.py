@@ -24,6 +24,7 @@ MIME_TYPE_ZIP = 'application/zip'
 MIME_TYPE_HTML = 'text/html'
 
 MAIL_GROUP_SUBCONTRACTOR_PAY_NOTIFY = 'mail_subcontractor_pay_notify'
+MAIL_GROUP_MEMBER_ORDER = 'mail_member_order'
 
 NAME_SYSTEM = "営業支援システム"
 NAME_BUSINESS_PLAN = "%02d月営業企画"

@@ -1,65 +1,119 @@
-{% extends theme|add:"/base.html" %}
 {% load humanize %}
-{% load sales_templates %}
-
-{% block header %}
-    <script type="text/javascript">
-        window.onload = function() {
-        };
-    </script>
-{% endblock %}
-
-{% block content %}
-    <div class="dashboard print">
-        <div class="dashboard-title">{{ title }}</div>
-        <form>
-        </form>
-        <table class="order print" cellpadding="0" cellspacing="0" style="width: 948px;">
-            {% if error_message %}
+<html>
+<head>
+    <style type="text/css">
+* {
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+div.container {
+    margin: 0 auto;
+    width: 948px;
+    padding-top: 20px;
+    position: relative;
+}
+table.request {
+    font-size: 10pt;
+    font-family: "ＭＳ Ｐゴシック";
+    table-layout: fixed;
+    border-image: initial;
+    margin: -10px auto 20px;
+    padding: 0px;
+}
+table.request .title {
+    font-size: 20pt;
+    text-align: center;
+    text-decoration: underline;
+}
+table.request tr {
+    height: 20px;
+}
+table.request td.bottom {
+    border-bottom: 1px solid #000;
+}
+table.request td.left {
+    border-left: 1px solid #000;
+}
+table.request td.top {
+    border-top: 1px solid #000;
+}
+table.request td.border_right {
+    border-right: 1px solid #000;
+}
+table.request td.align_left {
+    text-align: left;
+    padding-left: 3px;
+}
+table.request td.align_right {
+    text-align: right;
+    padding-right: 3px;
+}
+.center {
+    text-align: center;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        {% if is_request == 'False' %}
+            <img src="/static/admin/img/signature.png" style="position: absolute; width: 80px; left: 650px; top: 180px;"/>
+        {% endif %}
+        <table class="request" cellpadding="0" cellspacing="0" style="width: 850px;">
             <tr>
-                <td class="center red">{{ error_message }}</td>
+                <td colspan="9" style="text-align: right;">
+                    <u>注文番号：
+                            {{ bp_order.order_no }}
+                    </u>
+                </td>
+            </tr>
+            {% if is_request == 'True' %}
+            <tr >
+                <td></td>
+                <td rowspan="4" class="center" style="border: 1px solid black;"> 印紙<br>（捺印） </td>
+                <td colspan="7" style="text-align: right;">
+                    <u>
+                            {{ bp_order.bpmemberorderheading.publish_date }}
+                    </u>
+                </td>
             </tr>
             {% else %}
             <tr>
                 <td colspan="9" style="text-align: right;">
-                    <u>注文番号：
-                        {% if data %}
-                            {{ data.DETAIL.ORDER_NO }}
-                        {% else %}
-                            {{ bp_order.order_no }}
-                        {% endif %}
+                    <u>
+                            {{ bp_order.bpmemberorderheading.publish_date }}
                     </u>
                 </td>
             </tr>
+            {% endif %}
             <tr>
-                <td colspan="9" style="text-align: right;">
-                    <u>
-                        {% if data %}
-                            {{ data.DETAIL.PUBLISH_DATE }}
-                        {% else %}
-                            {{ bp_order.bpmemberorderheading.publish_date }}
-                        {% endif %}
-                    </u>
+                <td colspan="9" class="center" style="font-size: 24px;">
                 </td>
             </tr>
             <tr>
                 <td colspan="9" class="center" style="font-size: 24px;">
-                    <b>注&nbsp;&nbsp;文&nbsp;&nbsp;書</b>
+            </tr>
+            <tr>
+                <td colspan="9" class="center" style="font-size: 24px;">
+            </tr>
+            <tr>
+                <td colspan="9" class="center" style="font-size: 24px;">
+                    <b>{% if is_request == 'True' %} 注　文　請　書 {% else %} 注&nbsp;&nbsp;文&nbsp;&nbsp;書 {% endif %}</b>
                 </td>
             </tr>
             <tr>
                 <td colspan="9">
-                    （乙）
+                    {% if is_request == 'True' %} （甲） {% else %} （乙） {% endif %}
                 </td>
             </tr>
             <tr>
                 <td colspan="9">
                     <u>
-                        {% if data %}
-                            {{ data.DETAIL.SUBCONTRACTOR_NAME }}
+                        {% if is_request == 'True' %}
+                            {{ bp_order.bpmemberorderheading.company_name }}
                         {% else %}
                             {{ bp_order.bpmemberorderheading.subcontractor_name }}
-                        {% endif %}&nbsp;&nbsp;
+                        {% endif %}
                     </u>
                     御中
                 </td>
@@ -67,171 +121,129 @@
             <tr>
                 <td colspan="5"></td>
                 <td colspan="4">
-                    （甲）
+                    {% if is_request == 'True' %} （乙） {% else %} （甲） {% endif %}
                 </td>
             </tr>
             <tr>
                 <td colspan="5"></td>
                 <td colspan="4">
-                    {% if data %}
-                        {{ data.DETAIL.COMPANY_NAME }}
-                    {% else %}
-                        {{ bp_order.bpmemberorderheading.company_name }}
-                    {% endif %}
+                        {% if is_request == 'True' %}
+                            {{ bp_order.bpmemberorderheading.subcontractor_name }}  ㊞
+                        {% else %}
+                            {{ bp_order.bpmemberorderheading.company_name }}
+                        {% endif %}
+                </td>
+            </tr>
+            {% if is_request == 'True' %}
+            <tr>
+                <td colspan="5"></td>
+                <td colspan="4">
+                      〒 {{ bp_order.bpmemberorderheading.subcontractor_post_code }}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan="5"></td>
+                <td colspan="4">
+                {% if is_request == 'True' %}
+                    {{ bp_order.bpmemberorderheading.subcontractor_address1 }}
+                {% else %}
+                    {{ bp_order.bpmemberorderheading.company_address1 }}
+                {% endif %}
                 </td>
             </tr>
             <tr>
                 <td colspan="5"></td>
                 <td colspan="4">
-                    {% if data %}
-                        {{ data.DETAIL.ADDRESS1 }}
-                    {% else %}
-                        {{ bp_order.bpmemberorderheading.company_address1 }}
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5"></td>
-                <td colspan="4">
-                    {% if data %}
-                        {{ data.DETAIL.ADDRESS2 }}
-                    {% else %}
+                {% if is_request == 'True' %}
+                    {{ bp_order.bpmemberorderheading.subcontractor_address2 }}
+                {% else %}
                         {{ bp_order.bpmemberorderheading.company_address2 }}
-                    {% endif %}
+                {% endif %}
                 </td>
             </tr>
             <tr>
                 <td colspan="5"></td>
                 <td colspan="4">
-                    TEL:
-                    {% if data %}
-                        {{ data.DETAIL.TEL }}
+                    {% if is_request == 'True' %}
+                        TEL:   {{ bp_order.bpmemberorderheading.subcontractor_tel }}
+                    &nbsp;&nbsp;
+                        {% if bp_order.bpmemberorderheading.subcontractor_fax %}
+                            FAX:{{ bp_order.bpmemberorderheading.subcontractor_fax }}
+                        {% endif %}
                     {% else %}
-                        {{ bp_order.bpmemberorderheading.tel }}
-                    {% endif %}&nbsp;&nbsp;
-                    FAX:03-6809-3238
+                        TEL:   {{ bp_order.bpmemberorderheading.company_tel }}
+                    &nbsp;&nbsp;
+                        FAX:{{ bp_order.bpmemberorderheading.company_fax }}
+                    {% endif %}
                 </td>
             </tr>
             <tr><td colspan="9">&nbsp;</td></tr>
             <tr>
                 <td colspan="6">&nbsp;</td>
-                <td>作成者</td>
+                <td>{% if is_request == 'True' %} 承認者 {% else %} 作成者 {% endif %}</td>
                 <td colspan="2"></td>
             </tr>
-            <tr>
+            <tr style="height: 80px;">
                 <td colspan="6">&nbsp;</td>
-                <td class="left top border_right"></td>
-                <td colspan="2"></td>
-            </tr>
-            <tr>
-                <td colspan="6">&nbsp;</td>
-                <td class="left border_right"></td>
-                <td colspan="2"></td>
-            </tr>
-            <tr>
-                <td colspan="6">&nbsp;</td>
-                <td class="left bottom border_right"></td>
+                <td class="center" style="border: 2px solid black;">
+                    {% if is_request == 'False' %}
+                        {% if user.first_name %}
+                            {{ user.first_name }}
+                        {% else %}
+                            {{ user_first_name }}
+                        {% endif %}
+                    {% endif %}
+                </td>
                 <td colspan="2"></td>
             </tr>
             <tr><td colspan="9">&nbsp;</td></tr>
+            {% if is_request == 'False' %}
             <tr>
                 <td colspan="9">下記の通り注文致しますので、ご了承の上、折り返し注文請書をご送付下さい。</td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">業務名称</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.PROJECT_NAME }}
-                    {% else %}
+            {% endif %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="top left bottom center">業務名称</td>
+                <td colspan="7" class="top left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.project_name }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">作業期間</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.START_DATE }} ～ {{ data.DETAIL.END_DATE }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">作業期間</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.start_date }} ～ {{ bp_order.bpmemberorderheading.end_date }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">委託業務責任者（甲）</td>
-                <td colspan="3" class="left top">
-                    {% if data %}
-                        {{ data.DETAIL.MASTER }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">委託業務責任者（甲）</td>
+                <td colspan="3" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.master }}
-                    {% endif %}
                 </td>
-                <td colspan="2" class="center left top">連絡窓口担当者（甲）</td>
-                <td colspan="2" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.MIDDLEMAN }}
-                    {% else %}
+                <td colspan="2" class=" bottom center">連絡窓口担当者（甲）</td>
+                <td colspan="2" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.middleman }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">委託業務責任者（乙）</td>
-                <td colspan="3" class="left top">
-                    {% if data %}
-                        {{ data.DETAIL.SUBCONTRACTOR_MASTER }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">委託業務責任者（乙）</td>
+                <td colspan="3" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.subcontractor_master }}
-                    {% endif %}
                 </td>
-                <td colspan="2" class="center left top">連絡窓口担当者（乙）</td>
-                <td colspan="2" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.SUBCONTRACTOR_MIDDLEMAN|default:'' }}
-                    {% else %}
+                <td colspan="2" class=" bottom center">連絡窓口担当者（乙）</td>
+                <td colspan="2" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.subcontractor_middleman|default:'' }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">作業責任者</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.MEMBER_NAME }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">作業責任者</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.member_name }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">業務委託料金</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {% if data.DETAIL.IS_HOURLY_PAY %}
-                            <br/>
-                            {{ data.DETAIL.ALLOWANCE_BASE_MEMO }}
-                            <br/>
-                            {% if data.DETAIL.ALLOWANCE_OTHER_MEMO %}
-                            {{ data.DETAIL.ALLOWANCE_OTHER_MEMO }}
-                            {% endif %}
-                            <br/><br/>作業報告書に基づく稼動実費精算とする。<br/>
-                        {% elif data.DETAIL.IS_FIXED_COST %}
-                            <br/><br/>
-                            {{ data.DETAIL.ALLOWANCE_BASE_MEMO }}
-                            <br/><br/><br/>
-                        {% else %}
-                            {{ data.DETAIL.ALLOWANCE_BASE_MEMO }}<br/>
-                            {{ data.DETAIL.ALLOWANCE_OVERTIME_MEMO }}<br/>
-                            {{ data.DETAIL.ALLOWANCE_ABSENTEEISM_MEMO }}<br/>
-                            {{ data.DETAIL.CALCULATE_TYPE_COMMENT|default:'' }}<br/>
-                            {{ data.DETAIL.ALLOWANCE_TIME_MEMO }}<br/>
-                            {% if data.DETAIL.ALLOWANCE_OTHER_MEMO %}
-                                {{ data.DETAIL.ALLOWANCE_OTHER_MEMO }}<br/>
-                            {% endif %}
-                            {{ data.DETAIL.COMMENT|default:'' }}<br/>
-                            作業報告書に基づく稼動実費精算とする。
-                        {% endif %}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">業務委託料金</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         {% if bp_order.bpmemberorderheading.is_hourly_pay %}
                             <br/>
                             {{ bp_order.bpmemberorderheading.allowance_base_memo }}
@@ -256,50 +268,33 @@
                             {{ bp_order.bpmemberorderheading.comment }}<br/>
                             作業報告書に基づく稼動実費精算とする。
                         {% endif %}
-                    {% endif %}
                     <br/>
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">作業場所</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.LOCATION }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">作業場所</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.location }}
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="center left top">納入物件</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        {{ data.DETAIL.DELIVERY_PROPERTIES }}
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="2" class="left bottom center">納入物件</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         {{ bp_order.bpmemberorderheading.delivery_properties_comment }}
-                    {% endif %}
                 </td>
             </tr>
             <tr>
-                <td colspan="2" class="center left top">支払条件</td>
-                <td colspan="7" class="left top border_right">
-                    {% if data %}
-                        <pre style="min-height: 135px;">{{ data.DETAIL.PAYMENT_CONDITION }}</pre>
-                    {% else %}
+                <td colspan="2" class="left bottom center">支払条件</td>
+                <td colspan="7" class="left bottom align_left border_right">
                         <pre style="min-height: 135px;">{{ bp_order.bpmemberorderheading.payment_condition_comments }}</pre>
-                    {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td colspan="9" class="top">
-                    {% if data %}
-                        <pre style="min-height: 170px;">{{ data.DETAIL.CONTRACT_ITEMS }}</pre>
-                    {% else %}
+            <tr style="height: 30px;">
+                <td colspan="9">
                         <pre style="min-height: 170px;">{{ bp_order.bpmemberorderheading.contract_items_comments }}</pre>
-                    {% endif %}
                 </td>
             </tr>
-            {% endif %}
         </table>
     </div>
-{% endblock %}
+</body>
+</html>

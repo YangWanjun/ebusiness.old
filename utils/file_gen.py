@@ -1085,7 +1085,7 @@ def generate_order_linux(data, template_path, is_request):
     :return:
     """
     book = px.load_workbook(template_path)
-    sheet = book.get_sheet_by_name('Sheet1')
+    sheet = book.worksheets[0]
 
     # 電子印鑑
     img = common.get_signature_image()
@@ -1096,7 +1096,7 @@ def generate_order_linux(data, template_path, is_request):
     partner_name = data['DETAIL']['SUBCONTRACTOR_NAME']
     project_name = data['DETAIL']['PROJECT_NAME'] if 'PROJECT_NAME' in data['DETAIL'] else None
     member_name = data['DETAIL']['MEMBER_NAME'] if 'MEMBER_NAME' in data['DETAIL'] else None
-    path = common.get_order_file_path(order_no, partner_name, project_name, member_name, data['DETAIL']['YM'], is_request)
+    path_xls, path_pdf = common.get_order_file_path(order_no, partner_name, project_name, member_name, data['DETAIL']['YM'], is_request)
 
     for row in sheet.iter_rows():
         for cell in row:
@@ -1107,8 +1107,8 @@ def generate_order_linux(data, template_path, is_request):
                         cell.font = Font(name=u"ＭＳ 明朝", underline="single")
                     cell.value = replaced_string
 
-    book.save(path)
-    return path
+    book.save(path_xls)
+    return path_xls, path_pdf
 
 
 def replace_excel_dict(sheet, detail):

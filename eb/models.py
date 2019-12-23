@@ -744,11 +744,44 @@ class Subcontractor(AbstractCompany):
         cc_list.extend(mail_group.get_cc_list())
         return recipient_list, cc_list
 
+    def get_member_order_mail_list(self):
+        """支払通知書と請求書をメール送信時、の宛先リストとＣＣリストを取得する。
+
+        :return:
+        """
+        queryset = SubcontractorOrderRecipient.objects.public_filter(subcontractor=self)
+        recipient_list = []
+        cc_list = []
+        for request_recipient in queryset.filter(is_cc=False):
+            recipient_list.append(request_recipient.subcontractor_member.email)
+        for request_cc in queryset.filter(is_cc=True):
+            cc_list.append(request_cc.subcontractor_member.email)
+        # EBのＣＣリストを取得する
+        mail_group = MailGroup.get_member_order()
+        cc_list.extend(mail_group.get_cc_list())
+        return recipient_list, cc_list
+
     def delete(self, using=None, keep_parents=False):
         self.is_deleted = True
         self.deleted_date = datetime.datetime.now()
         self.save()
 
+    def get_pay_date(self, date=datetime.date.today()):
+        """支払い期限日を取得する。
+
+        :param date:
+        :return:
+        """
+        months = int(self.payment_month) if self.payment_month else 1
+        pay_month = common.add_months(date, months)
+        if self.payment_day == '99' or not self.payment_day:
+            return common.get_last_day_by_month(pay_month)
+        else:
+            pay_day = int(self.payment_day)
+            last_day = common.get_last_day_by_month(pay_month)
+            if last_day.day < pay_day:
+                return last_day
+            return datetime.date(pay_month.year, pay_month.month, pay_day)
 
 class SubcontractorBankInfo(BaseModel):
     subcontractor = models.ForeignKey(Subcontractor, on_delete=models.PROTECT, verbose_name=u"協力会社")
@@ -830,7 +863,7 @@ class SubcontractorOrderRecipient(BaseModel):
 
 
 class MailTemplate(BaseModel):
-    mail_title = models.CharField(max_length=50, unique=True, verbose_name=u"送信メールのタイトル")
+    mail_title = models.CharField(max_length=100, unique=True, verbose_name=u"送信メールのタイトル")
     mail_body = models.TextField(blank=True, null=True, verbose_name=u"メール本文(Plain Text)")
     mail_html = models.TextField(blank=True, null=True, verbose_name=u"メール本文(HTML)")
     pass_title = models.CharField(
@@ -918,6 +951,15 @@ class MailGroup(BaseModel):
             return MailGroup.objects.get(name=constants.MAIL_GROUP_SUBCONTRACTOR_PAY_NOTIFY)
         except ObjectDoesNotExist:
             mail_group = MailGroup(name=constants.MAIL_GROUP_SUBCONTRACTOR_PAY_NOTIFY)
+            mail_group.save()
+            return mail_group
+
+    @classmethod
+    def get_member_order(cls):
+        try:
+            return MailGroup.objects.get(name=constants.MAIL_GROUP_MEMBER_ORDER)
+        except ObjectDoesNotExist:
+            mail_group = MailGroup(name=constants.MAIL_GROUP_MEMBER_ORDER)
             mail_group.save()
             return mail_group
 
@@ -3631,7 +3673,9 @@ class BpMemberOrder(BaseModel):
     end_month = models.CharField(max_length=2, blank=False, null=True, verbose_name=u"終了月")
     business_days = models.IntegerField(default=0, verbose_name=u"営業日数")
     filename = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"注文書ファイル名")
+    filename_pdf = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"注文書ＰＤＦ名")
     filename_request = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"注文請書")
+    filename_request_pdf = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"注文請書ＰＤＦ")
     is_sent = models.BooleanField(default=False, verbose_name=u"送信")
     created_user = models.ForeignKey(User, related_name='created_orders', null=True, on_delete=models.PROTECT,
                                      editable=False, verbose_name=u"作成者")
@@ -3708,13 +3752,13 @@ class BpMemberOrder(BaseModel):
 
     def get_order_path(self):
         if self.filename:
-            return os.path.join(settings.GENERATED_FILES_ROOT, "partner_order", '%s%s' % (self.year, self.month), self.filename)
+            return os.path.join(settings.GENERATED_FILES_ROOT, "partner_order", '%s%s' % (self.year, self.month), self.filename_pdf)
         else:
             return None
 
     def get_order_request_path(self):
         if self.filename_request:
-            return os.path.join(settings.GENERATED_FILES_ROOT, "partner_order", '%s%s' % (self.year, self.month), self.filename_request)
+            return os.path.join(settings.GENERATED_FILES_ROOT, "partner_order", '%s%s' % (self.year, self.month), self.filename_request_pdf)
         else:
             return None
 
@@ -3738,6 +3782,7 @@ class BpMemberOrder(BaseModel):
                                            company_address2=data['DETAIL'].get('ADDRESS2', None),
                                            company_name=data['DETAIL'].get('COMPANY_NAME', None),
                                            company_tel=data['DETAIL'].get('TEL', None),
+                                           company_fax=data['DETAIL'].get('FAX', None),
                                            project_name=data['DETAIL'].get('PROJECT_NAME', None),
                                            start_date=data['DETAIL'].get('START_DATE', None),
                                            end_date=data['DETAIL'].get('END_DATE', None),

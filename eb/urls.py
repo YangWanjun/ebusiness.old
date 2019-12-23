@@ -167,6 +167,8 @@ subcontractor_patterns = [
         name='view_subcontractor_pay_notify'),
     url(r'^subcontractor_request_mail/(?P<subcontractor_id>[0-9]+)/(?P<year>[0-9]{4})/(?P<month>[0-9]{2}).html$',
         views.SendMailBpRequestView.as_view(), name='send_mail_bp_request'),
+    url(r'^subcontractor_member_mail/(?P<member_id>[0-9]+)/(?P<year>[0-9]{4})/(?P<month>[0-9]{2}).html$',
+        views.SendMailBpMemberView.as_view(), name='send_mail_bp_member'),
 ]
 
 project_patterns = [

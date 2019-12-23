@@ -26,7 +26,7 @@ from django.core.urlresolvers import reverse
 from django.forms.models import modelformset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, get_object_or_404
-from django.template import loader
+from django.template import loader, Context, Template
 from django.template.context_processors import csrf
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -465,7 +465,8 @@ class ProjectListView(BaseTemplateView):
         o = request.GET.get('o', None)
         q = request.GET.get('q', None)
         dict_order = common.get_ordering_dict(o, ['name', 'client__name', 'salesperson__first_name', 'boss__name',
-                                                  'middleman__name', 'updated_date', 'business_type', 'start_date', 'end_date'])
+                                                  'middleman__name', 'updated_date', 'business_type', 'start_date',
+                                                  'end_date'])
         order_list = common.get_ordering_list(o)
         all_projects = biz.get_projects(q=param_dict, o=order_list)
 
@@ -1025,7 +1026,7 @@ class SubcontractorPayNotifyView(BaseTemplateViewWithoutLogin):
     template_name = 'default/subcontractor_pay_notify.html'
 
     def get(self, request, *args, **kwargs):
-        request_id = kwargs.get('request_id', 0) 
+        request_id = kwargs.get('request_id', 0)
         subcontractor_request = get_object_or_404(models.SubcontractorRequest, pk=request_id)
         if hasattr(subcontractor_request, 'subcontractorrequestheading'):
             request_heading = subcontractor_request.subcontractorrequestheading
@@ -1352,7 +1353,8 @@ class ReleaseListView(BaseTemplateView):
         if section_id:
             organization = get_object_or_404(models.Section, pk=section_id)
             org_pk_list = common.get_organization_children(organization)
-            members = members.filter(Q(division__in=org_pk_list) | Q(section__in=org_pk_list) | Q(subsection__in=org_pk_list))
+            members = members.filter(
+                Q(division__in=org_pk_list) | Q(section__in=org_pk_list) | Q(subsection__in=org_pk_list))
 
         o = request.GET.get('o', None)
         dict_order = common.get_ordering_dict(o, ['member__first_name', 'member__subcontractor__name',
@@ -1396,10 +1398,10 @@ class MemberProjectsView(BaseTemplateView):
         status = request.GET.get('status', None)
         member = get_object_or_404(models.Member, employee_id=employee_id)
         if status and status != '0':
-            project_members = models.ProjectMember.objects.public_filter(member=member, status=status)\
+            project_members = models.ProjectMember.objects.public_filter(member=member, status=status) \
                 .order_by('-status', 'end_date')
         else:
-            project_members = models.ProjectMember.objects.public_filter(member=member)\
+            project_members = models.ProjectMember.objects.public_filter(member=member) \
                 .order_by('-status', 'end_date')
 
         context = self.get_context_data()
@@ -1540,6 +1542,8 @@ class ConstSubcontractorInYear2View(BaseTemplateView):
 """
 個人事業主コスト
 """
+
+
 @method_decorator(permission_required('eb.view_subcontractor', raise_exception=True), name='get')
 class CostBusinessOwnerView(BaseTemplateView):
     template_name = 'default/cost_business_owner.html'
@@ -1625,7 +1629,6 @@ class CostSubcontractorMembersByMonthView(BaseTemplateView):
         except EmptyPage:
             object_list = paginator.page(paginator.num_pages)
 
-
         bundle_project_list = biz_turnover.get_bundle_project(subcontractor_id, year, month)
 
         context.update({
@@ -1671,6 +1674,8 @@ class CostSubcontractorsByMonthView(BaseTemplateView):
             'month': month,
         })
         return context
+
+
 # WEB総振 振込データ
 # format
 # ジャパンネット銀行 Business Account WEB総振 振込データの項目説明
@@ -1684,7 +1689,8 @@ class DownloadCostSubcontractorsByMonthView(BaseTemplateView):
         # find bank information for 'data_frame' 
         subcontractor_list = list(data_frame.iterrows())
         subcontractor_ids = [subcontractor.company_id for idx, subcontractor in subcontractor_list]
-        subcontractor_bankinfo_list = models.SubcontractorBankInfo.objects.filter(subcontractor_id__in=subcontractor_ids)
+        subcontractor_bankinfo_list = models.SubcontractorBankInfo.objects.filter(
+            subcontractor_id__in=subcontractor_ids)
 
         response = HttpResponse(content_type='text/csv')
         # force download.
@@ -1701,8 +1707,9 @@ class DownloadCostSubcontractorsByMonthView(BaseTemplateView):
         writer.writerow(['8', '件数'.encode('utf-8'), '合計金額'.encode('utf-8'), ''])
         # last row
         writer.writerow(['9', ''])
-        
+
         return response
+
     # first row, eb's bank information
     def writeBankInfomationOfEB(self, writer):
         today = datetime.date.today()
@@ -1712,48 +1719,49 @@ class DownloadCostSubcontractorsByMonthView(BaseTemplateView):
         bankInfo = models.BankInfo.objects.first()
         # format -> ジャパンネット銀行 Business Account WEB総振 振込データの項目説明
         # first row
-        writer.writerow(['1',                               #データ区分 (1) 「1」固定
-            '21',                                           #種別コード (2) 「21] 固定
-            '0',                                            #コード区分 (1) 「0」固定
-            '',                                             #振込依頼人コード ( 10) (設定不要)
-            bankInfo.account_holder.encode('utf-8'),        #振込依頼人名 ( 40) 「入力必須」
-            datetime.date(today.year, today.month, lastday).strftime("%m%d"),#振込日 (4) 「MMDD」
-            '33',                                           #振込元銀行コード (4) 「33」固定
-            '',                                             #振込元銀行名 ( 15) (省略可)
-            bankInfo.branch_no.encode('utf-8'),             #振込元支店コード (3) 「入力必須」
-            '',                                             #振込元支店名 ( 15) (省略可
-            '1',                                            #振込元預金種目 (1) 「1」固定
-            bankInfo.account_number.encode('utf-8'),        #振込元口座番号 (7) 「入力必須」
-            ''])                                            #予備(7)( 設定不要)
+        writer.writerow(['1',  # データ区分 (1) 「1」固定
+                         '21',  # 種別コード (2) 「21] 固定
+                         '0',  # コード区分 (1) 「0」固定
+                         '',  # 振込依頼人コード ( 10) (設定不要)
+                         bankInfo.account_holder.encode('utf-8'),  # 振込依頼人名 ( 40) 「入力必須」
+                         datetime.date(today.year, today.month, lastday).strftime("%m%d"),  # 振込日 (4) 「MMDD」
+                         '33',  # 振込元銀行コード (4) 「33」固定
+                         '',  # 振込元銀行名 ( 15) (省略可)
+                         bankInfo.branch_no.encode('utf-8'),  # 振込元支店コード (3) 「入力必須」
+                         '',  # 振込元支店名 ( 15) (省略可
+                         '1',  # 振込元預金種目 (1) 「1」固定
+                         bankInfo.account_number.encode('utf-8'),  # 振込元口座番号 (7) 「入力必須」
+                         ''])  # 予備(7)( 設定不要)
 
     # write the bank information for subcatontractor
     def writeRowForSubcontractor(self, writer, s_bank, subcontractor_list):
         # 振込先口座の預金科目(1:普通、2:当座、4:貯蓄)を入力してください。
-        bank_account_type='1'
-        if s_bank.account_type == '4' :
-            bank_account_type='2'
-        elif s_bank.account_type == '5' :
-            bank_account_type='4'
+        bank_account_type = '1'
+        if s_bank.account_type == '4':
+            bank_account_type = '2'
+        elif s_bank.account_type == '5':
+            bank_account_type = '4'
 
         # The Cost of current month
-        money = [subcontractor.total_cost for idx, subcontractor in subcontractor_list if subcontractor.company_id == s_bank.subcontractor.pk][0]
+        money = [subcontractor.total_cost for idx, subcontractor in subcontractor_list if
+                 subcontractor.company_id == s_bank.subcontractor.pk][0]
         writer.writerow([
-            '2',                                #データ区分「2」固定
-            '' if s_bank.bank_code is None else s_bank.bank_code.encode('utf-8'),       #銀行コード
-            '' if s_bank.bank_name is None else s_bank.bank_name.encode('utf-8'),       #銀行名(省略可)
-            '' if s_bank.branch_no is None else s_bank.branch_no.encode('utf-8'),       #支店コード
-            '' if s_bank.branch_name is None else s_bank.branch_name.encode('utf-8'),   #支店名(省略可)
-            '',                                 #手形交換所番号(設定不要)
-            bank_account_type.encode('utf-8'),  #預金種目
-            '' if s_bank.account_number is None else s_bank.account_number.encode('utf-8'),#口座番号
-            '' if s_bank.account_holder is None else s_bank.account_holder.encode('utf-8'),#受取人名
-            '' if money is None else int(round(money)),     #金額
-            '0',                                #新規コード「0」固定
-            '',                                 #顧客コード1 ( 10) (設定不要)
-            '',                                 #顧客コード2 ( 10) (設定不要)
-            '',                                 #振込指定区分 (1) (設定不要)
-            '',                                 #識別表示 (1) (設定不要)
-            ''])                                #予備(7)( 設定不要']
+            '2',  # データ区分「2」固定
+            '' if s_bank.bank_code is None else s_bank.bank_code.encode('utf-8'),  # 銀行コード
+            '' if s_bank.bank_name is None else s_bank.bank_name.encode('utf-8'),  # 銀行名(省略可)
+            '' if s_bank.branch_no is None else s_bank.branch_no.encode('utf-8'),  # 支店コード
+            '' if s_bank.branch_name is None else s_bank.branch_name.encode('utf-8'),  # 支店名(省略可)
+            '',  # 手形交換所番号(設定不要)
+            bank_account_type.encode('utf-8'),  # 預金種目
+            '' if s_bank.account_number is None else s_bank.account_number.encode('utf-8'),  # 口座番号
+            '' if s_bank.account_holder is None else s_bank.account_holder.encode('utf-8'),  # 受取人名
+            '' if money is None else int(round(money)),  # 金額
+            '0',  # 新規コード「0」固定
+            '',  # 顧客コード1 ( 10) (設定不要)
+            '',  # 顧客コード2 ( 10) (設定不要)
+            '',  # 振込指定区分 (1) (設定不要)
+            '',  # 識別表示 (1) (設定不要)
+            ''])  # 予備(7)( 設定不要']
 
 
 @method_decorator(permission_required('eb.view_subcontractor', raise_exception=True), name='get')
@@ -1946,8 +1954,20 @@ class BpMemberOrdersView(BaseTemplateView):
         member_id = kwargs.get('member_id')
         member = get_object_or_404(models.Member, pk=member_id)
         project_members = member.projectmember_set.public_filter(is_deleted=False).order_by('-start_date')
+        mail_group = models.MailGroup.get_member_order()
         md5 = hashlib.md5()
         md5.update(datetime.date.today().strftime('%Y%m%debsales'))
+
+        mailtitles = []
+        mailbodys = []
+        for month in common.get_month_list3():
+            mail_title = mail_group.get_mail_title(month=int(month[0]))
+            mailtitles.append((int(month[0]),mail_title))
+
+            mail_body = mail_group.get_mail_body(subcontractorname=member.subcontractor.name,month=int(month[0]))
+            mailbodys.append((int(month[0]),mail_body))
+
+        pass_body = mail_group.get_pass_body(subcontractorname=member.subcontractor.name)
         context.update({
             'title': u"%s | ＢＰ注文書" % unicode(member),
             'member': member,
@@ -1955,6 +1975,10 @@ class BpMemberOrdersView(BaseTemplateView):
             'year_list': common.get_year_list(),
             'month_list': common.get_month_list3(),
             'md5_token': md5.hexdigest().decode('raw_unicode_escape'),
+            'mail_sender': mail_group.mail_sender,
+            'mailtitles': mailtitles,
+            'mailbodys': mailbodys,
+            'pass_body': pass_body,
         })
         return context
 
@@ -1976,7 +2000,7 @@ class BpLumpContractOrdersView(BaseTemplateView):
         return context
 
 
-class BpLumpOrderDetailView(BaseTemplateView):
+class BpLumpOrderDetailView(BaseTemplateViewWithoutLogin):
     template_name = 'default/bp_lump_order.html'
 
     def get_context_data(self, **kwargs):
@@ -2012,13 +2036,13 @@ class BpLumpOrderDetailView(BaseTemplateView):
         return context
 
 
-class BpMemberOrderDetailView(BaseTemplateView):
+class BpMemberOrderDetailView(BaseTemplateViewWithoutLogin):
     template_name = 'default/bp_member_order.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(BpMemberOrderDetailView, self).get_context_data(**kwargs)
-        request = kwargs.get('request')
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
         preview = kwargs.get('preview', False)
+        is_request = request.GET.get("is_request", None)
         if preview:
             project_member_id = kwargs.get('project_member_id')
             project_member = get_object_or_404(models.ProjectMember, pk=project_member_id)
@@ -2040,8 +2064,19 @@ class BpMemberOrderDetailView(BaseTemplateView):
         else:
             order_id = kwargs.get('order_id')
             bp_order = get_object_or_404(models.BpMemberOrder, pk=order_id)
+
+            bp_order_payment_condition = models.Config.get_bp_order_payment_condition()
+
+            if bp_order_payment_condition:
+                t = Template(bp_order_payment_condition)
+                context = {'bp_order': bp_order,
+                           }
+                bp_order.bpmemberorderheading.payment_condition_comments = t.render(Context(context))
+
             context.update({
                 'bp_order': bp_order,
+                'is_request': is_request,
+                'user_first_name': request.GET.get("user_first_name", None),
             })
         context.update({
             'title': u"%s | %s(%s年%s月)" % (
@@ -2050,7 +2085,7 @@ class BpMemberOrderDetailView(BaseTemplateView):
                 bp_order.month,
             ),
         })
-        return context
+        return self.render_to_response(context)
 
 
 @login_required(login_url='/eb/login/')
@@ -2147,7 +2182,8 @@ class DownloadBpLumpOrder(BaseView):
             if hasattr(lump_contract, 'bplumporder'):
                 lump_order = lump_contract.bplumporder
             else:
-                lump_order = models.BpLumpOrder.get_next_bp_order(lump_contract, request.user, publish_date=publish_date)
+                lump_order = models.BpLumpOrder.get_next_bp_order(lump_contract, request.user,
+                                                                  publish_date=publish_date)
             if overwrite:
                 if is_request:
                     filename = lump_order.filename_request if lump_order.filename_request else 'None'
@@ -2224,9 +2260,15 @@ class DownloadBpMemberOrder(BaseView):
             overwrite = request.GET.get("overwrite", None)
             if overwrite:
                 if is_request:
-                    filename = bp_order.filename_request if bp_order.filename_request else 'None'
+                    if overwrite == "xlsx":
+                        filename = bp_order.filename_request if bp_order.filename_request else 'None'
+                    if overwrite == "pdf":
+                        filename = bp_order.filename_request_pdf if bp_order.filename_request_pdf else 'None'
                 else:
-                    filename = bp_order.filename if bp_order.filename else 'None'
+                    if overwrite == "xlsx":
+                        filename = bp_order.filename if bp_order.filename else 'None'
+                    if overwrite == "pdf":
+                        filename = bp_order.filename_pdf if bp_order.filename_pdf else 'None'
                 path = os.path.join(settings.GENERATED_FILES_ROOT, "partner_order",
                                     '%04d%02d' % (int(bp_order.year), int(bp_order.month)), filename)
                 if not os.path.exists(path):
@@ -2242,8 +2284,10 @@ class DownloadBpMemberOrder(BaseView):
                 data = biz.generate_bp_order_data(project_member, year, month, contract, request.user, bp_order,
                                                   publish_date=publish_date, end_year=end_year, end_month=end_month)
                 template_path = common.get_template_order_path(contract, is_request)
-                path = file_gen.generate_order(data=data, template_path=template_path, is_request=is_request)
-                filename = os.path.basename(path)
+                path_xls, path_pdf = file_gen.generate_order(data=data, template_path=template_path,
+                                                             is_request=is_request)
+                filename = os.path.basename(path_xls)
+                path = path_xls
                 if not bp_order.pk:
                     bp_order.created_user = request.user
                     action_flag = ADDITION
@@ -2254,10 +2298,12 @@ class DownloadBpMemberOrder(BaseView):
                     bp_order.subcontractor = contract.company
                 if is_request:
                     # 注文請書の場合
-                    bp_order.filename_request = filename
+                    bp_order.filename_request = os.path.basename(path_xls)
+                    bp_order.filename_request_pdf = os.path.basename(path_pdf)
                     bp_order.save()
                 else:
-                    bp_order.filename = filename
+                    bp_order.filename = os.path.basename(path_xls)
+                    bp_order.filename_pdf = os.path.basename(path_pdf)
                     bp_order.save(data=data)
                 if action_flag == ADDITION:
                     change_message = u'追加しました。'
@@ -2265,12 +2311,20 @@ class DownloadBpMemberOrder(BaseView):
                     change_message = u'再作成しました。'
                 else:
                     change_message = u"注文請書を作成しました。"
+
+                # PDF作成
+                url = common.get_absolute_url(
+                    reverse('bp_member_order', args=(bp_order.pk,))) + "?is_request=" + str(
+                    is_request) + "&user_first_name=" + request.user.first_name
+                common.generate_pdf_from_url(url, path_pdf)
+
                 LogEntry.objects.log_action(request.user.id,
                                             ContentType.objects.get_for_model(bp_order).pk,
                                             bp_order.pk,
                                             unicode(bp_order),
                                             action_flag,
                                             change_message)
+
             response = HttpResponse(open(path, 'rb'), content_type="application/excel")
             response['Content-Disposition'] = "filename=" + urllib.quote(filename.encode('UTF-8'))
             return response
@@ -2657,6 +2711,47 @@ class BusinessDaysView(BaseView):
         month = request.POST.get('month')
         business_days = common.get_business_days(year, month)
         return JsonResponse({'business_days': business_days})
+
+
+class SendMailBpMemberView(BaseView):
+
+    def post(self, request, *args, **kwargs):
+        year = kwargs.get('year')
+        month = kwargs.get('month')
+        project_member_id = kwargs.get(str('member_id'))
+        project_member = get_object_or_404(models.ProjectMember, pk=project_member_id)
+        contract = biz.get_bp_contract(project_member.member, year, month)
+        bp_order = models.BpMemberOrder.get_next_bp_order(contract.company, project_member, year, month)
+        ret = {}
+        if bp_order:
+            sender = request.POST.get('sender', None)
+            recipient_list = request.POST.get('recipient_list', None)
+            cc_list = request.POST.get('cc_list', None)
+            mail_title = request.POST.get('mail_title', None)
+            mail_body = request.POST.get('mail_body', None)
+            pass_body = request.POST.get('pass_body', None)
+            try:
+                attachment_list = []
+                attachment_list.append(bp_order.get_order_path())
+                attachment_list.append(bp_order.get_order_request_path())
+                mail_data = {
+                    'sender': sender, 'recipient_list': recipient_list, 'cc_list': cc_list,
+                    'attachment_list': attachment_list, 'is_encrypt': True,
+                    'mail_title': mail_title, 'mail_body': mail_body, 'addressee': unicode(bp_order),
+                    'pass_body': pass_body, 'zip_file_name': bp_order.filename[:-5],
+                }
+                mail = EbMail(**mail_data)
+                mail.send_email()
+                mail_data['user'] = request.user
+                bp_order.is_sent = True
+                bp_order.save(update_fields=['is_sent'])
+                ret.update({'result': True, 'message': ""})
+            except Exception as ex:
+                common.get_sales_logger().error(traceback.format_exc())
+                ret.update({'result': False, 'message': ex.message})
+        else:
+            ret.update({'result': False, 'message': "注文書と注文書請求書はまだ作成されていません。"})
+        return JsonResponse(ret)
 
 
 class SendMailBpRequestView(BaseView):

@@ -107,8 +107,10 @@ class EbMail(object):
                 for attachment_file in self.attachment_list:
                     if '注文書' in attachment_file:
                         new_path = os.path.join(temp_path, os.path.basename('注文書.pdf'))
-                    if '注文請書' in attachment_file:
+                    elif '注文請書' in attachment_file:
                         new_path = os.path.join(temp_path, os.path.basename('注文請書.pdf'))
+                    else:
+                        new_path = os.path.join(temp_path, os.path.basename(attachment_file))
                     file_list.append(new_path)
                     self.temp_files.append(new_path)
                     shutil.copy(attachment_file, new_path)

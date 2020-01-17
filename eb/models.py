@@ -2778,7 +2778,7 @@ class ProjectMember(BaseModel):
             # 増（円）
             d['ITEM_PLUS_PER_HOUR'] = 0
             # 基本金額＋残業金額
-            d['ITEM_AMOUNT_TOTAL'] = attendance.price if attendance else 0
+            d['ITEM_AMOUNT_TOTAL'] = attendance.price * attendance.total_hours if attendance else 0
         else:
             # 基本金額
             d['ITEM_AMOUNT_BASIC'] = self.price if attendance else u""

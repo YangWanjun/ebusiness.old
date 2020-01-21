@@ -2027,8 +2027,8 @@ class Project(BaseModel):
                              verbose_name=u"案件責任者")
     middleman = models.ForeignKey(ClientMember, blank=True, null=True, on_delete=models.PROTECT,
                                   related_name="middleman_set", verbose_name=u"案件連絡者")
-    salesperson = models.ForeignKey(Salesperson, blank=True, null=True, on_delete=models.PROTECT, verbose_name=u"営業員")
-    department = models.ForeignKey(Section, blank=True, null=True, verbose_name=u"所属部署", on_delete=models.PROTECT,
+    salesperson = models.ForeignKey(Salesperson, blank=False, null=True, on_delete=models.PROTECT, verbose_name=u"営業員")
+    department = models.ForeignKey(Section, blank=False, null=True, verbose_name=u"所属部署", on_delete=models.PROTECT,
                                    help_text=u"一括案件で、メンバーアサインしていない場合を設定する。")
     members = models.ManyToManyField(Member, through='ProjectMember', blank=True)
 

@@ -33,10 +33,14 @@ class MemberForm(BaseForm):
                                 help_text=u"数値だけを入力してください、例：1230034",
                                 required=False)
 
-    id_card_expired_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"在留カード期限",required=False)
-    visa_start_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"ビザ有効期限（開始）",required=False)
-    visa_expire_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"ビザ有効期限（終了）",required=False)
-    passport_expired_dt = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"パスポート有効期限",required=False)
+    id_card_expired_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"在留カード期限",
+                                           required=False)
+    visa_start_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"ビザ有効期限（開始）",
+                                      required=False)
+    visa_expire_date = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"ビザ有効期限（終了）",
+                                       required=False)
+    passport_expired_dt = forms.DateField(widget=AdminDateWidget(attrs={'style': 'width: 80px;'}), label=u"パスポート有効期限",
+                                          required=False)
 
     def __init__(self, *args, **kwargs):
         super(MemberForm, self).__init__(*args, **kwargs)

@@ -156,6 +156,16 @@
                     <th>{{ form.private_email.label_tag }}</th>
                     <td colspan="3">{{ form.private_email.errors }}{{ form.private_email }}</td>
                 </tr>
+                <tr>
+                    <th>{{ form.personal_number.label_tag }}</th>
+                    <td>{{ form.personal_number.errors }}{{ form.personal_number }}</td>
+                    <th>{{ form.basic_pension_no.label_tag }}</th>
+                    <td>{{ form.basic_pension_no.errors }}{{ form.basic_pension_no }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.employment_insurance_no.label_tag }}</th>
+                    <td colspan="3">{{ form.employment_insurance_no.errors }}{{ form.employment_insurance_no }}</td>
+                </tr>
                 <!-- EBOA 情報追加 20180328 zhuang-->
                 <tr>
                     <th>{{ form.passport_number.label_tag }}</th>
@@ -202,6 +212,26 @@
                     <td>{{ form.pay_owner_kana.errors }}{{ form.pay_owner_kana }}</td>
                 </tr>
                 <!-- EBOA 情報追加 20180328 zhuang-->
+                <tr>
+                    <th>{{ form.emergency_post_code.label_tag }}</th>
+                    <td colspan="3">{{ form.emergency_post_code.errors }}{{ form.emergency_post_code }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.emergency_address1.label_tag }}</th>
+                    <td>{{ form.emergency_address1.errors }}{{ form.emergency_address1 }}</td>
+                    <th>{{ form.emergency_address2.label_tag }}</th>
+                    <td>{{ form.emergency_address2.errors }}{{ form.emergency_address2 }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.emergency_name.label_tag }}</th>
+                    <td>{{ form.emergency_name.errors }}{{ form.emergency_name }}</td>
+                    <th>{{ form.emergency_phone.label_tag }}</th>
+                    <td>{{ form.emergency_phone.errors }}{{ form.emergency_phone }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.emergency_relationship.label_tag }}</th>
+                    <td colspan="3">{{ form.emergency_relationship.errors }}{{ form.emergency_relationship }}</td>
+                </tr>
                 <tr>
                     <th>{{ form.is_retired.label_tag }}</th>
                     <td>{{ form.is_retired.errors }}{{ form.is_retired }}</td>

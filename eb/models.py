@@ -1329,6 +1329,18 @@ class Member(AbstractMember):
     pay_owner_kana = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"口座名義（カナ）")
     pay_account = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"口座番号")
     avatar_url = models.CharField(blank=True, null=True, max_length=500, verbose_name=u"自分の写真")
+    personal_number = models.CharField(max_length=12, blank=True, null=True, verbose_name=u"個人番号")
+    basic_pension_no = models.CharField(max_length=10, blank=True, null=True, verbose_name=u"基礎年金番号")
+    employment_insurance_no = models.CharField(max_length=11, blank=True, null=True, verbose_name=u"雇用保険証被保険者番号")
+    emergency_post_code = models.CharField(
+        blank=True, null=True, max_length=7, verbose_name=u"緊急連絡先郵便番号",
+        help_text=u"数値だけを入力してください、例：1230034"
+    )
+    emergency_address1 = models.CharField(blank=True, null=True, max_length=200, verbose_name=u"緊急連絡先住所１")
+    emergency_address2 = models.CharField(blank=True, null=True, max_length=200, verbose_name=u"緊急連絡先住所２")
+    emergency_name = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"緊急連絡先氏名")
+    emergency_phone = models.CharField(blank=True, null=True, max_length=11, verbose_name=u"緊急連絡先電話番号")
+    emergency_relationship = models.CharField(blank=True, null=True, max_length=10, verbose_name=u"緊急連絡先との関係")
 
     objects = PublicManager(is_deleted=False, is_retired=False)
 

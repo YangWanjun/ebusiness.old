@@ -52,7 +52,7 @@
 <div>
     <div class="flowTop"></div>
     <div class="flowBox">
-        <form method="post" action="#">
+        <form method="post" action="#" enctype="multipart/form-data">
             <div style="display: none;">{% csrf_token %}
                 {{ form.cost }}
                 {{ form.notify_type }}
@@ -163,8 +163,24 @@
                     <td>{{ form.basic_pension_no.errors }}{{ form.basic_pension_no }}</td>
                 </tr>
                 <tr>
+                    <th>{{ form.personal_number_image_front.label_tag }}</th>
+                    <td colspan="3">{{ form.personal_number_image_front.errors }}{{ form.personal_number_image_front }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.personal_number_image_back.label_tag }}</th>
+                    <td colspan="3">{{ form.personal_number_image_back.errors }}{{ form.personal_number_image_back }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.basic_pension_image.label_tag }}</th>
+                    <td colspan="3">{{ form.basic_pension_image.errors }}{{ form.basic_pension_image }}</td>
+                </tr>
+                <tr>
                     <th>{{ form.employment_insurance_no.label_tag }}</th>
                     <td colspan="3">{{ form.employment_insurance_no.errors }}{{ form.employment_insurance_no }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.prev_employment_insurance_image.label_tag }}</th>
+                    <td colspan="3">{{ form.prev_employment_insurance_image.errors }}{{ form.prev_employment_insurance_image }}</td>
                 </tr>
                 <!-- EBOA 情報追加 20180328 zhuang-->
                 <tr>
@@ -174,10 +190,22 @@
                     <td>{{ form.passport_expired_dt.errors }}{{ form.passport_expired_dt }}</td>
                 </tr>
                 <tr>
+                    <th>{{ form.passport_image.label_tag }}</th>
+                    <td colspan="3">{{ form.passport_image.errors }}{{ form.passport_image }}</td>
+                </tr>
+                <tr>
                     <th>{{ form.id_number.label_tag }}</th>
                     <td>{{ form.id_number.errors }}{{ form.id_number }}</td>
                     <th>{{ form.id_card_expired_date.label_tag }}</th>
                     <td>{{ form.id_card_expired_date.errors }}{{ form.id_card_expired_date }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.id_card_image_front.label_tag }}</th>
+                    <td colspan="3">{{ form.id_card_image_front.errors }}{{ form.id_card_image_front }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.id_card_image_back.label_tag }}</th>
+                    <td colspan="3">{{ form.id_card_image_back.errors }}{{ form.id_card_image_back }}</td>
                 </tr>
                 <tr>
                     <th>{{ form.visa_start_date.label_tag }}</th>
@@ -210,6 +238,10 @@
                     <td>{{ form.pay_owner.errors }}{{ form.pay_owner }}</td>
                     <th>{{ form.pay_owner_kana.label_tag }}</th>
                     <td>{{ form.pay_owner_kana.errors }}{{ form.pay_owner_kana }}</td>
+                </tr>
+                <tr>
+                    <th>{{ form.cash_card_image.label_tag }}</th>
+                    <td colspan="3">{{ form.cash_card_image.errors }}{{ form.cash_card_image }}</td>
                 </tr>
                 <!-- EBOA 情報追加 20180328 zhuang-->
                 <tr>

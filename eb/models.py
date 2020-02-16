@@ -20,7 +20,7 @@ from xml.etree import ElementTree
 
 from django.db import models, connection
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 from django.core.validators import RegexValidator
 from django.db.models import Max, Min, Q, Sum, Prefetch, Subquery, OuterRef
 from django.db.models.functions import Concat
@@ -42,6 +42,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from utils import common, constants
 from utils.errors import CustomException
+
+
+def validate_image_extension(value):
+    ext = os.path.splitext(value.name)[1]
+    valid_ext = ['.pdf', '.jpg', '.jpeg', '.png']
+    if ext.lower() not in valid_ext:
+        raise ValidationError(u"サポートしないファイルです、%sファイルをアップロードしてください。" % (", ".join(valid_ext)),)
 
 
 class AbstractCompany(models.Model):
@@ -783,6 +790,7 @@ class Subcontractor(AbstractCompany):
                 return last_day
             return datetime.date(pay_month.year, pay_month.month, pay_day)
 
+
 class SubcontractorBankInfo(BaseModel):
     subcontractor = models.ForeignKey(Subcontractor, on_delete=models.PROTECT, verbose_name=u"協力会社")
     bank = models.ForeignKey(Bank, blank=False, null=True, on_delete=models.PROTECT, verbose_name=u"銀行")
@@ -1316,10 +1324,21 @@ class Member(AbstractMember):
     deleted_date = models.DateTimeField(blank=True, null=True, editable=False, verbose_name=u"削除年月日")
     id_number = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"在留カード番号")
     id_card_expired_date = models.DateField(blank=True, null=True, verbose_name=u"在留カード期限")
+    id_card_image_front = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='residence',
+        verbose_name=u"在留カード画像_表面"
+    )
+    id_card_image_back = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='residence',
+        verbose_name=u"在留カード画像_裏面"
+    )
     visa_start_date = models.DateField(blank=True, null=True, verbose_name=u"ビザ有効期限（開始）")
     visa_expire_date = models.DateField(blank=True, null=True, verbose_name=u"ビザ有効期限（終了）")
     passport_number = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"パスポート番号")
     passport_expired_dt = models.DateField(blank=True, null=True, verbose_name=u"パスポート有効期限")
+    passport_image = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='passport', verbose_name=u"パスポート画像"
+    )
     residence_type = models.CharField(blank=True, null=True, max_length=20, choices=constants.CHOICE_RESIDENCE_TYPE, verbose_name=u"在留種類")
     pay_bank = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"銀行名")
     pay_bank_code = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"銀行コード")
@@ -1328,10 +1347,30 @@ class Member(AbstractMember):
     pay_owner = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"口座名義")
     pay_owner_kana = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"口座名義（カナ）")
     pay_account = models.CharField(blank=True, null=True, max_length=20, verbose_name=u"口座番号")
+    cash_card_image = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='cash_card',
+        verbose_name=u"キャッシュカード画像"
+    )
     avatar_url = models.CharField(blank=True, null=True, max_length=500, verbose_name=u"自分の写真")
     personal_number = models.CharField(max_length=12, blank=True, null=True, verbose_name=u"個人番号")
+    personal_number_image_front = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='personal_number',
+        verbose_name=u"個人番号画像_表面"
+    )
+    personal_number_image_back = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='personal_number',
+        verbose_name=u"個人番号画像_裏面"
+    )
     basic_pension_no = models.CharField(max_length=10, blank=True, null=True, verbose_name=u"基礎年金番号")
+    basic_pension_image = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='basic_pension',
+        verbose_name=u"基礎年金番号画像"
+    )
     employment_insurance_no = models.CharField(max_length=11, blank=True, null=True, verbose_name=u"雇用保険証被保険者番号")
+    prev_employment_insurance_image = models.FileField(
+        blank=True, null=True, validators=[validate_image_extension], upload_to='employment_insurance',
+        verbose_name=u"雇用保険証画像（前職）"
+    )
     emergency_post_code = models.CharField(
         blank=True, null=True, max_length=7, verbose_name=u"緊急連絡先郵便番号",
         help_text=u"数値だけを入力してください、例：1230034"

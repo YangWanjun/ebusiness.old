@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.i18n import javascript_catalog
+from django.views.static import serve
 # from eboa.admin import eboa_admin_site
 # from del_data.admin import del_data_admin_site
 from contract.admin import contract_admin_site
@@ -12,6 +14,7 @@ from eb.urls import router as eb_router
 
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),
+    url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     url(r'^wt/', include('eb.urls')),
     url(r'^flow/', include('flow.urls')),
     url(r'^contract/', include('contract.urls')),

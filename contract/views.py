@@ -322,7 +322,7 @@ class MemberChangeView(BaseTemplateView):
         context = self.get_context_data(**kwargs)
         old_member = context.get('member')
         is_add = False if old_member.pk else True
-        form = forms.MemberForm(request.POST, instance=old_member)
+        form = forms.MemberForm(request.POST, instance=old_member, files=request.FILES)
         context.update({
             'form': form,
         })
@@ -342,7 +342,10 @@ class MemberChangeView(BaseTemplateView):
                                  'pay_branch_code',
                                  'pay_owner', 'pay_owner_kana', 'visa_start_date', 'visa_expire_date',
                                  'emergency_post_code', 'emergency_address1', 'emergency_address2',
-                                 'emergency_name', 'emergency_phone', 'emergency_relationship',]
+                                 'emergency_name', 'emergency_phone', 'emergency_relationship',
+                                 'cash_card_image', 'passport_image', 'id_card_image_front', 'id_card_image_back',
+                                 'personal_number_image_front', 'personal_number_image_back',
+                                 'basic_pension_image', 'prev_employment_insurance_image']
             else:
                 update_fields = None
             member.save(update_fields=update_fields)

@@ -62,6 +62,12 @@ media/client_order/*
 media/quotation/temp/*
 media/eb_order/temp/*
 media/temp/*
+media/cash_card/*
+media/passport/*
+media/residence/*
+media/basic_pension/*
+media/employment_insurance/*
+media/personal_number/*
 *.DS_Store
 *.cert
 *.key

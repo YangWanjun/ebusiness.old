@@ -93,6 +93,9 @@
                         {% if contract.allowance_diligence %}
                             精勤手当 : ¥{{ contract.allowance_diligence|intcomma }}円/月&nbsp;{{ contract.allowance_diligence_memo|default:'' }}<br/>
                         {% endif %}
+                        {% if contract.allowance_region %}
+                            地域手当 : ¥{{ contract.allowance_region|intcomma }}円/月&nbsp;{{ contract.allowance_region_memo|default:'' }}<br/>
+                        {% endif %}
                         {% if contract.allowance_security %}
                             安全手当 : ¥{{ contract.allowance_security|intcomma }}円/月&nbsp;{{ contract.allowance_security_memo|default:'' }}<br/>
                         {% endif %}
@@ -130,18 +133,16 @@
                 <th>昇給および<br/>降給</th>
                 <td colspan="4" style="padding: 1px 5px;">{{ contract.allowance_change_comment|default:'' }}</td>
             </tr>
-            {% if contract.member_type == 1 %}
+            {% if contract.member_type == 1 and contract.bonus_comment %}
             <tr>
                 <th>賞　　与</th>
                 <td colspan="5" style="padding: 1px 5px;"><pre>{{ contract.bonus_comment|default:'' }}</pre></td>
             </tr>
-            {% else %}
-            {% if contract.member_type == 7 %}
+            {% elif contract.member_type == 7 and contract.bonus_comment %}
             <tr>
                 <th>賞　　与</th>
                 <td colspan="5" style="padding: 1px 5px;"><pre>{{ contract.bonus_comment|default:'' }}</pre></td>
             </tr>
-            {% endif %}
             {% endif %}
             <tr>
                 <th>休　　日</th>

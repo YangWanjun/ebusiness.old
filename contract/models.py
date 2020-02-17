@@ -93,6 +93,8 @@ class Contract(BaseModel):
     allowance_position_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"職務手当メモ")
     allowance_diligence = models.IntegerField(default=0, verbose_name=u"精勤手当")
     allowance_diligence_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"精勤手当メモ")
+    allowance_region = models.IntegerField(default=0, verbose_name=u"地域手当")
+    allowance_region_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"地域手当メモ")
     allowance_security = models.IntegerField(default=0, verbose_name=u"安全手当")
     allowance_security_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"安全手当メモ")
     allowance_qualification = models.IntegerField(default=0, verbose_name=u"資格手当")
@@ -523,6 +525,8 @@ class ViewContract(models.Model):
     allowance_diligence = models.IntegerField(db_column='allowance_diligence', default=0, verbose_name=u"精勤手当")
     allowance_diligence_memo = models.CharField(db_column='allowance_diligence_memo', max_length=255, blank=True,
                                                 null=True, verbose_name=u"精勤手当メモ")
+    allowance_region = models.IntegerField(default=0, verbose_name=u"地域手当")
+    allowance_region_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"地域手当メモ")
     allowance_security = models.IntegerField(db_column='allowance_security', default=0, verbose_name=u"安全手当")
     allowance_security_memo = models.CharField(db_column='allowance_security_memo', max_length=255, blank=True,
                                                null=True, verbose_name=u"安全手当メモ")

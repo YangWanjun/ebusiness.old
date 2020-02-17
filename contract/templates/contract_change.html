@@ -357,6 +357,12 @@ var timeline;
                                 <td>{{ form.allowance_diligence_memo }}</td>
                             </tr>
                             <tr>
+                                <td>{{ form.allowance_region.label_tag }}</td>
+                                <td>{{ form.allowance_region.errors }}{{ form.allowance_region }}</td>
+                                <td class="center">円/月</td>
+                                <td>{{ form.allowance_region_memo }}</td>
+                            </tr>
+                            <tr>
                                 <td>{{ form.allowance_security.label_tag }}</td>
                                 <td>{{ form.allowance_security.errors }}{{ form.allowance_security }}</td>
                                 <td class="center">円/月</td>

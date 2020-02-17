@@ -435,6 +435,7 @@ class MemberInsurancesView(BaseTemplateView):
 
         return context
 
+
 class MemberInsuranceEditView(BaseTemplateView):
     template_name = 'insurance.html'
 

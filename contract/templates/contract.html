@@ -120,9 +120,22 @@
                 </td>
             </tr>
             <tr>
-                {% if contract.endowment_insurance == '1' %}
+                {% if contract.has_employment_insurance or contract.has_health_insurance or contract.has_employee_pension or contract.has_injury_insurance %}
                     <th>会社保険</th>
-                    <td colspan="4" style="padding: 1px 5px;">厚生年金保険 : 加入する</td>
+                    <td colspan="4" style="padding: 1px 5px;">
+                        {% if contract.has_employment_insurance %}
+                            雇用保険 : 加入する<br/>
+                        {% endif %}
+                        {% if contract.has_health_insurance %}
+                            健康保険 : 加入する<br/>
+                        {% endif %}
+                        {% if contract.has_employee_pension %}
+                            厚生年金 : 加入する<br/>
+                        {% endif %}
+                        {% if contract.has_injury_insurance %}
+                            労災保険 : 加入する
+                        {% endif %}
+                    </td>
                 {% endif %}
             </tr>
             <tr>

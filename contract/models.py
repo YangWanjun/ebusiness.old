@@ -113,6 +113,10 @@ class Contract(BaseModel):
                                            choices=constants.CHOICE_ENDOWMENT_INSURANCE,
                                            verbose_name=u"社会保険加入有無",
                                            help_text=u"0:加入しない、1:加入する")
+    has_employment_insurance = models.BooleanField(default=False, verbose_name="雇用保険加入")
+    has_health_insurance = models.BooleanField(default=False, verbose_name="健康保険加入")
+    has_employee_pension = models.BooleanField(default=False, verbose_name="厚生年金加入")
+    has_injury_insurance = models.BooleanField(default=False, verbose_name="労災保険加入")
     allowance_ticket_comment = models.TextField(blank=True, null=True, verbose_name=u"諸手当")
     allowance_date_comment = models.TextField(blank=True, null=True, default=Config.get_allowance_date_comment(),
                                               verbose_name=u"給与締め切り日及び支払日")

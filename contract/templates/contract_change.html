@@ -413,9 +413,18 @@ var timeline;
                         </table>
                     </td>
                 </tr>
-                <tr>
+                <tr style="display: none;">
                     <th>{{ form.endowment_insurance.label_tag }}</th>
                     <td colspan="3">{{ form.endowment_insurance.errors }}{{ form.endowment_insurance }}</td>
+                </tr>
+                <tr>
+                    <th><label>保険加入状況</label></th>
+                    <td colspan="3">
+                        {{ form.has_employment_insurance.label_tag }}{{ form.has_employment_insurance }}<br/>
+                        {{ form.has_health_insurance.label_tag }}{{ form.has_health_insurance }}<br/>
+                        {{ form.has_employee_pension.label_tag }}{{ form.has_employee_pension }}<br/>
+                        {{ form.has_injury_insurance.label_tag }}{{ form.has_injury_insurance }}
+                    </td>
                 </tr>
                 <tr>
                     <th>{{ form.allowance_date_comment.label_tag }}</th>

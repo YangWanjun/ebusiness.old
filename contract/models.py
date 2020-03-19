@@ -87,8 +87,8 @@ class Contract(BaseModel):
                                                  verbose_name=u"基本給その他メモ")
     allowance_work = models.IntegerField(default=0, verbose_name=u"現場手当")
     allowance_work_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"現場手当メモ")
-    allowance_director = models.IntegerField(default=0, verbose_name=u"役職手当")
-    allowance_director_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"役職手当メモ")
+    allowance_director = models.IntegerField(default=0, verbose_name=u"管理職手当")
+    allowance_director_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"管理職手当メモ")
     allowance_position = models.IntegerField(default=0, verbose_name=u"職務手当")
     allowance_position_memo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"職務手当メモ")
     allowance_diligence = models.IntegerField(default=0, verbose_name=u"精勤手当")
@@ -520,9 +520,9 @@ class ViewContract(models.Model):
     allowance_work = models.IntegerField(db_column='allowance_work', default=0, verbose_name=u"現場手当")
     allowance_work_memo = models.CharField(db_column='allowance_work_memo', max_length=255, blank=True, null=True,
                                            verbose_name=u"現場手当メモ")
-    allowance_director = models.IntegerField(db_column='allowance_director', default=0, verbose_name=u"役職手当")
+    allowance_director = models.IntegerField(db_column='allowance_director', default=0, verbose_name=u"管理職手当")
     allowance_director_memo = models.CharField(db_column='allowance_director_memo', max_length=255, blank=True,
-                                               null=True, verbose_name=u"役職手当メモ")
+                                               null=True, verbose_name=u"管理職手当メモ")
     allowance_position = models.IntegerField(db_column='allowance_position', default=0, verbose_name=u"職務手当")
     allowance_position_memo = models.CharField(db_column='allowance_position_memo', max_length=255, blank=True,
                                                null=True, verbose_name=u"職務手当メモ")
